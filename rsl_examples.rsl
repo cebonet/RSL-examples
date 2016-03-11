@@ -14,10 +14,10 @@ scheme rsl_examples =
       phone_num : PhoneNumber = <.1, 2, 3, 4, 5, 6, 7, 8.>, 
       	 
       /*
-      the type checker will complain about following phone number
+      an error will be reported for following value
       since it doesn't obey the PhoneNumber type.
       */
-      /* not_a_phone_num : PhoneNumber <. 1,2, 3,4, 5,6, 7,8, 9 .> */
+      not_a_phone_num : PhoneNumber = <. 1,2, 3,4, 5,6, 7,8, 9 .>,
 
       -- a basic trivial recursive function 
       fibonacci : Nat -> Nat
@@ -32,14 +32,14 @@ scheme rsl_examples =
       function which zips two lists together to one list of tuples....
 
       This version of the zip function passes on the intermediate result
-      as an argument, and performs a call to the same function as the last step in each recursion. 
-      This allows the SML compiler to perform tail-call-optimization
-      which is an optimization where the stack frames are reused on each recursive
-      function call and makes it possible to avoid stack-overflows as it will only
-      be using one stack frame at all times. The tail-call-optimization can only be
-      performed if the recursive function call is the last thing that happens at
-      each recursion step (see zip2 for a function which cannot be
-      tail-call-optimized).
+      as an argument, and performs a call to the same function as the last step
+      in each recursion. This allows the SML compiler to perform
+      tail-call-optimization which is an optimization where the stack frames are
+      reused on each recursive function call and makes it possible to avoid
+      stack-overflows as it will only be using one stack frame at all times.
+      The tail-call-optimization can only be performed if the recursive function
+      call is the last thing that happens at each recursion step
+      (see zip2 and fibonnaci for functions which cannot be tail-call-optimized).
       You might not encounter stack-overflow problems for the assignments in this
       course, but this is still essential knowledge about recursive functions. 
       */
@@ -113,5 +113,5 @@ scheme rsl_examples =
         end, 
       [concat_lists] <.0, 1.> ^ <.2, 3.>,
       [zip1_test] zip1(<. 1,2,3 .>, <. 4,5,6 .>, <..>),
-      [zip2_test] zip2(<. 1,2,3 .>, <. 4,5,6 .>),
+      [zip2_test] zip2(<. 1,2,3 .>, <. 4,5,6 .>)
   end
