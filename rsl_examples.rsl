@@ -32,7 +32,8 @@ scheme rsl_examples =
       function which zips two lists together to one list of tuples....
 
       This version of the zip function passes on the intermediate result
-      as an argument. This allows the SML compiler to perform tail-call-optimization
+      as an argument, and performs a call to the same function as the last step in each recursion. 
+      This allows the SML compiler to perform tail-call-optimization
       which is an optimization where the stack frames are reused on each recursive
       function call and makes it possible to avoid stack-overflows as it will only
       be using one stack frame at all times. The tail-call-optimization can only be
