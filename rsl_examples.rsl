@@ -1,0 +1,116 @@
+scheme rsl_examples = 
+  class 
+    type 
+      /*
+      sub-type (constrainted type),
+      a list of exactly 8 natural numbers
+      */
+      PhoneNumber = {| phone_number : Nat-list :- len (phone_number) = 8 |} 
+    	 
+    value 
+      increment : Nat -> Nat
+      increment(x) is x + 1, 
+      	
+      phone_num : PhoneNumber = <.1, 2, 3, 4, 5, 6, 7, 8.>, 
+      	 
+      /*
+      the type checker will complain about following phone number
+      since it doesn't obey the PhoneNumber type.
+      */
+      /* not_a_phone_num : PhoneNumber <. 1,2, 3,4, 5,6, 7,8, 9 .> */
+
+      -- a basic trivial recursive function 
+      fibonacci : Nat -> Nat
+      fibonacci(n) is 
+        case n of
+          0 -> 1,
+          1 -> 1,
+          _ -> fibonacci(n - 1) + fibonacci(n - 2)
+        end, 
+      	
+      /*
+      function which zips two lists together to one list of tuples....
+
+      This version of the zip function passes on the intermediate result
+      as an argument. This allows the SML compiler to perform tail-call-optimization
+      which is an optimization where the stack frames are reused on each recursive
+      function call and makes it possible to avoid stack-overflows as it will only
+      be using one stack frame at all times. The tail-call-optimization can only be
+      performed if the recursive function call is the last thing that happens at
+      each recursion step (see zip2 for a function which cannot be
+      tail-call-optimized).
+      You might not encounter stack-overflow problems for the assignments in this
+      course, but this is still essential knowledge about recursive functions. 
+      */
+      zip1 : Nat-list >< Nat-list >< (Nat >< Nat)-list -> (Nat >< Nat)-list
+      zip1(l1, l2, result) is 
+        if len l1 > 0 /\ len l2 > 0 
+        then 
+          let 
+            h1 = hd l1, 
+            h2 = hd l2, 
+            t1 = tl l1, 
+            t2 = tl l2, 
+            result' = result ^ <.(h1, h2).> 
+          in 
+            zip1(t1, t2, result') 
+          end 
+        else result 
+        end,
+
+      /*
+      zip two lists together to one list of tuples....
+
+      This zip function has a concatenation as final step in each recursion,
+      and thus it needs to 'remember' all previous stack-frames which makes
+      it impossible for the SML compiler to perform tail-call-optimization.
+      This function can potentially cause stack-overflow if given two very
+      long lists.
+      Use whichever type of recursion you prefer, they are both fine for most cases.
+      */
+      zip2 : Nat-list >< Nat-list -> (Nat >< Nat)-list
+      zip2(l1, l2) is
+        if len l1 > 0 /\ len l2 > 0 
+        then 
+          let 
+            h1 = hd l1, 
+            h2 = hd l2, 
+            t1 = tl l1, 
+            t2 = tl l2
+          in 
+            <. (h1,h2) .> ^ zip2(t1, t2) 
+          end 
+         else
+          <. .>
+         end
+               
+    	 
+    test_case 
+      [incr_test]
+        increment(42), 
+      [phone_num_test]
+        phone_num, 
+      [some_list]
+        <.1, 2, 3.>, 
+      [some_other_list]
+        <.1 .. 10.>, 
+      [some_list_comprehension]
+        <.x | x in <.1 .. 10.> :- x \ 2 = 0.>, 
+      [some_set_comprehension]
+        {x | x : Nat :- x isin {1 .. 10} /\ x \ 2 = 0}, 
+      [some_other_set_comprehension]
+        {x + 1 | x : Nat :- x isin {0 .. 10} /\ x \ 2 = 0}, 
+      [fibonacci_test]
+        fibonacci(12), 
+      [head_and_tail]
+        let 
+          some_list = <.1, 2, 3.>, 
+          head = hd some_list, 
+          tail = tl some_list 
+        in 
+          head = 1 /\ tail = <.2, 3.> 
+        end, 
+      [concat_lists] <.0, 1.> ^ <.2, 3.>,
+      [zip1_test] zip1(<. 1,2,3 .>, <. 4,5,6 .>, <..>),
+      [zip2_test] zip2(<. 1,2,3 .>, <. 4,5,6 .>),
+  end
