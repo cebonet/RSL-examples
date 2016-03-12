@@ -174,8 +174,7 @@ scheme rsl_examples =
           head = hd some_list, 
           tail = tl some_list 
         in 
-          head = 1 /\ 
-          tail = <.2, 3.> --the return value of the let-expression
+          head = 1 /\ tail = <.2, 3.> --the return value of the let-expression
         end, 
       [if_expression]
         /*
