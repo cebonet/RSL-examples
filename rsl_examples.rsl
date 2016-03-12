@@ -67,7 +67,7 @@ scheme rsl_examples =
       it impossible for the SML compiler to perform tail-call-optimization.
       This function can potentially cause stack-overflow if given two very
       long lists.
-      Use whichever type of recursion you prefer, they are both fine for most cases.
+      Use whichever style of recursion you prefer, they are both fine for most cases.
       */
       zip2 : Nat-list >< Nat-list -> (Nat >< Nat)-list
       zip2(l1, l2) is
