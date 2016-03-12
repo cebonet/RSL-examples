@@ -1,3 +1,8 @@
+
+/*
+various RSL implementation examples
+*/
+	
 scheme rsl_examples = 
   class 
     type 
@@ -5,21 +10,36 @@ scheme rsl_examples =
       sub-type (constrainted type),
       a list of exactly 8 natural numbers
       */
-      PhoneNumber = {| phone_number : Nat-list :- len (phone_number) = 8 |} 
+      PhoneNumber = 
+        {| phone_number : Nat-list :- len phone_number = 8 |}, 
+      -- union type
+      Language == korean | japanese | danish | french, 
+      -- ordered tree example from the RSL book page 102
+      Tree == 
+        empty | node(left : Tree, elem : Nat, right : Tree), 
+      OrderedTree = {| t : Tree :- tree_is_ordered(t) |} 
     	 
     value 
+      /*
+      an empty set need to be declared with a type,
+      else it will be ambigous to the type checker
+      (see the [set_union] test case)
+      */
+      empty_nat_set : Nat-set = {},
+
       increment : Nat -> Nat
       increment(x) is x + 1, 
       	
-      phone_num : PhoneNumber = <.1, 2, 3, 4, 5, 6, 7, 8.>, 
+      dial_phone_num : PhoneNumber -> Char-list
+      dial_phone_num(phone_num) is "hello", 
+
+      some_partial_function : Nat -~-> Nat
+      some_partial_function(n) is n + 42
+      pre n > 17,
       	 
       /*
-      an error will be reported for following value
-      since it doesn't obey the PhoneNumber type.
-      */
-      not_a_phone_num : PhoneNumber = <. 1,2, 3,4, 5,6, 7,8, 9 .>,
-
-      -- a basic trivial recursive function 
+      a basic recursive function 
+      */ 
       fibonacci : Nat -> Nat
       fibonacci(n) is 
         case n of
@@ -27,10 +47,11 @@ scheme rsl_examples =
           1 -> 1,
           _ -> fibonacci(n - 1) + fibonacci(n - 2)
         end, 
-      	
+      	 
       /*
-      function which zips two lists together to one list of tuples....
+      function which zips two lists together to one
 
+      list of tuples....
       This version of the zip function passes on the intermediate result
       as an argument, and performs a call to the same function as the last step
       in each recursion. This allows the SML compiler to perform
@@ -42,8 +63,10 @@ scheme rsl_examples =
       (see zip2 and fibonnaci for functions which cannot be tail-call-optimized).
       You might not encounter stack-overflow problems for the assignments in this
       course, but this is still essential knowledge about recursive functions. 
-      */
-      zip1 : Nat-list >< Nat-list >< (Nat >< Nat)-list -> (Nat >< Nat)-list
+      */ 
+      zip1 : 
+        Nat-list >< Nat-list >< (Nat >< Nat)-list -> 
+          (Nat >< Nat)-list
       zip1(l1, l2, result) is 
         if len l1 > 0 /\ len l2 > 0 
         then 
@@ -57,8 +80,8 @@ scheme rsl_examples =
             zip1(t1, t2, result') 
           end 
         else result 
-        end,
-
+        end, 
+      	 
       /*
       zip two lists together to one list of tuples....
 
@@ -66,33 +89,68 @@ scheme rsl_examples =
       and thus it needs to 'remember' all previous stack-frames which makes
       it impossible for the SML compiler to perform tail-call-optimization.
       This function can potentially cause stack-overflow if given two very
-      long lists.
-      Use whichever style of recursion you prefer, they are both fine for most cases.
-      */
+      long lists. Use whichever type of recursion you prefer, they
+      are both fine for most cases.
+      */ 
       zip2 : Nat-list >< Nat-list -> (Nat >< Nat)-list
-      zip2(l1, l2) is
+      zip2(l1, l2) is 
         if len l1 > 0 /\ len l2 > 0 
         then 
           let 
-            h1 = hd l1, 
-            h2 = hd l2, 
-            t1 = tl l1, 
-            t2 = tl l2
+            h1 = hd l1, h2 = hd l2, t1 = tl l1, t2 = tl l2 
           in 
-            <. (h1,h2) .> ^ zip2(t1, t2) 
+            <.(h1, h2).> ^ zip2(t1, t2) 
           end 
-         else
-          <. .>
-         end
-               
+        else <..> 
+        end, 
+      	
+      /*
+      example implementation from the RSL book page 102
+      */
+      tree_is_ordered : Tree -> Bool
+      tree_is_ordered(t) is 
+        case t of
+          empty -> true,
+          node(t1, e, t2) -> --notice how t1,e and t2 are 'extracted' from node and used in the match case
+            (all e1 : Nat :- 
+               e1 isin extract_elems(t1) => e1 < e) /\ 
+            (all e2 : Nat :- 
+               e2 isin extract_elems(t2) => e < e2) /\ 
+            tree_is_ordered(t1) /\ tree_is_ordered(t2)
+        end, 
+      	
+      /*
+      example implementation from the RSL book page 102
+      */
+      extract_elems : Tree -> Nat-set
+      extract_elems(t) is 
+        case t of
+          empty -> {},
+          node(t1, e, t2) -> 
+            {e} union extract_elems(t1) union 
+            extract_elems(t2)
+        end 
     	 
     test_case 
       [incr_test]
         increment(42), 
-      [phone_num_test]
-        phone_num, 
+      [dial_phone_test]
+        dial_phone_num(<.1, 2, 3, 4, 5, 6, 7, 8.>), 
+      [dial_phone_test2]
+        /*
+        this test will yield an error since the given phone number doesn't obey the sub-type
+        */
+        dial_phone_num(<.1, 2, 3, 4, 5, 6, 7, 8, 9.>), 
+      [partial_fun_test]
+        /*
+        this test will yield an error since the precondition of the function isnt met
+        */
+        some_partial_function(3),
+      [partial_fun_test2] some_partial_function(18),
       [some_list]
         <.1, 2, 3.>, 
+      [lenght_of_list] len <. 1,2,3 .>,
+      [cardinality_of_set] card {1,2,3},
       [some_other_list]
         <.1 .. 10.>, 
       [some_list_comprehension]
@@ -104,14 +162,59 @@ scheme rsl_examples =
       [fibonacci_test]
         fibonacci(12), 
       [head_and_tail]
+        /*
+        A let-expression.
+        The compiler can infer the types of the assignments so you don't
+        need to specify the types explicitly.
+        All the defined assignments are immutable values and can therefore not be
+        mutated in the expression.
+        */
         let 
           some_list = <.1, 2, 3.>, 
           head = hd some_list, 
           tail = tl some_list 
         in 
-          head = 1 /\ tail = <.2, 3.> 
+          head = 1 /\ 
+          tail = <.2, 3.> --the return value of the let-expression
         end, 
-      [concat_lists] <.0, 1.> ^ <.2, 3.>,
-      [zip1_test] zip1(<. 1,2,3 .>, <. 4,5,6 .>, <..>),
-      [zip2_test] zip2(<. 1,2,3 .>, <. 4,5,6 .>)
+      [if_expression]
+        /*
+        languages such as java uses if-statements which doesn't return anything,
+        in RSL if-expressions are used, which returns a value based on a condition.
+        Since if-expressions always return something, they must have an else clause.
+        */
+        if true then 42 else 0 end, 
+      [concat_lists]
+        <.0, 1.> ^ <.2, 3.>, 
+      [set_difference] {1,2,3,4} \ {2,4},
+      [set_union] empty_nat_set union {14,2,1},
+      [zip1_test]
+        zip1(<.1, 2, 3.>, <.4, 5, 6.>, <..>), 
+      [zip2_test]
+        zip2(<.1, 2, 3.>, <.4, 5, 6.>), 
+      [all_predicate]
+        (all x : Nat :- x isin {1 .. 10} => x < 11), 
+      [exists_predicate]
+        (exists x : Nat :- x isin {1 .. 5} /\ x > 4), 
+      /*
+      tests of the ordered tree function
+      */
+      [ordered_tree_test]
+        let 
+          tree = 
+            node(
+               node(empty, 2, empty), 5, 
+               node(empty, 9, empty)) 
+        in 
+          tree_is_ordered(tree) 
+        end, 
+      [ordered_tree_test2]
+        let 
+          tree = 
+            node(
+               node(empty, 7, empty), 5, 
+               node(empty, 9, empty)) 
+        in 
+          tree_is_ordered(tree) = false 
+        end
   end
