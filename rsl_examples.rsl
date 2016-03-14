@@ -1,6 +1,6 @@
 
 /*
-various RSL implementation examples
+    various RSL implementation examples, all translate-able to SML
 */
 	
 scheme rsl_examples = 
@@ -21,18 +21,39 @@ scheme rsl_examples =
     	 
     value 
       /*
-      an empty set need to be declared with a type,
-      else it will be ambigous to the type checker
-      (see the [set_union] test case)
+      an empty set often need to be declared with a type,
+      else it will be ambigous to the type checker for the cases
+      where it has to infer the type.
+      (see the [set_union2] test case)
       */
       empty_nat_set : Nat-set = {},
 
+      -- simple function example
       increment : Nat -> Nat
       increment(x) is x + 1, 
+
+      -- using the Language unit-type
+      say_hello : Language -> Char-list
+      say_hello(l) is
+        case l of
+            french -> "salut",
+            japanese -> "konnichiwa",
+            danish -> "hej",
+            korean -> "anyoung"
+        end,
+
+      -- a quiet boring function that does nothing (the Unit type is similar to void in java)
+      void_method : Nat -> Unit
+      void_method(n) is (),
       	
+      -- function using the PhoneNumber sub-type
       dial_phone_num : PhoneNumber -> Char-list
       dial_phone_num(phone_num) is "hello", 
 
+      /*
+      a partial function. In contrast to total functions
+      it doesn't return a result for all possible input values
+      */
       some_partial_function : Nat -~-> Nat
       some_partial_function(n) is n + 42
       pre n > 17,
@@ -49,9 +70,8 @@ scheme rsl_examples =
         end, 
       	 
       /*
-      function which zips two lists together to one
+      function which zips two lists together to one list of tuples....
 
-      list of tuples....
       This version of the zip function passes on the intermediate result
       as an argument, and performs a call to the same function as the last step
       in each recursion. This allows the SML compiler to perform
@@ -83,7 +103,7 @@ scheme rsl_examples =
         end, 
       	 
       /*
-      zip two lists together to one list of tuples....
+      yet another function that zip two lists together to one list of tuples....
 
       This zip function has a concatenation as final step in each recursion,
       and thus it needs to 'remember' all previous stack-frames which makes
@@ -103,6 +123,37 @@ scheme rsl_examples =
           end 
         else <..> 
         end, 
+
+      /*
+      a higher-order function
+      maps a function over a list of values and returns
+      a new list
+      */
+      map_fun : (Int -> Int) >< Int-list -> Int-list
+      map_fun(fun, xs) is <. fun(x) | x in xs.>,
+
+      /*
+      recursive function that returns the sum of a list of natural numbers
+      */
+      sum : Int-list -> Int
+      sum(xs) is
+              if len xs > 0 then
+                 (hd xs) + sum(tl xs)
+              else
+                 0
+              end,
+
+      /*
+      add two numbers (see [curry_example]'s under the tests)
+      */
+      add_two_numbers : Int -> Int -> Int
+      add_two_numbers(x)(y) is x + y,
+
+      /*
+      using the add_two_numbers function to create a new function
+      */
+      add_forty_two : Int -> Int
+      add_forty_two(x) is add_two_numbers(42)(x),
       	
       /*
       example implementation from the RSL book page 102
@@ -121,6 +172,7 @@ scheme rsl_examples =
       	
       /*
       example implementation from the RSL book page 102
+      (my own interpertation)
       */
       extract_elems : Tree -> Nat-set
       extract_elems(t) is 
@@ -132,10 +184,8 @@ scheme rsl_examples =
         end 
     	 
     test_case 
-      [incr_test]
-        increment(42), 
-      [dial_phone_test]
-        dial_phone_num(<.1, 2, 3, 4, 5, 6, 7, 8.>), 
+      [incr_test] increment(42), 
+      [dial_phone_test] dial_phone_num(<.1, 2, 3, 4, 5, 6, 7, 8.>), 
       [dial_phone_test2]
         /*
         this test will yield an error since the given phone number doesn't obey the sub-type
@@ -147,24 +197,19 @@ scheme rsl_examples =
         */
         some_partial_function(3),
       [partial_fun_test2] some_partial_function(18),
-      [some_list]
-        <.1, 2, 3.>, 
+      [say_hello_example] say_hello(japanese),
+      [some_list] <.1, 2, 3.>, 
       [lenght_of_list] len <. 1,2,3 .>,
       [cardinality_of_set] card {1,2,3},
-      [some_other_list]
-        <.1 .. 10.>, 
-      [some_list_comprehension]
-        <.x | x in <.1 .. 10.> :- x \ 2 = 0.>, 
-      [some_set_comprehension]
-        {x | x : Nat :- x isin {1 .. 10} /\ x \ 2 = 0}, 
-      [some_other_set_comprehension]
-        {x + 1 | x : Nat :- x isin {0 .. 10} /\ x \ 2 = 0}, 
-      [fibonacci_test]
-        fibonacci(12), 
+      [some_other_list] <.1 .. 10.>, 
+      [some_list_comprehension] <.x | x in <.1 .. 10.> :- x \ 2 = 0.>, 
+      [some_set_comprehension] {x | x : Nat :- x isin {1 .. 10} /\ x \ 2 = 0}, 
+      [some_other_set_comprehension] {x + 1 | x : Nat :- x isin {0 .. 10} /\ x \ 2 = 0}, 
+      [fibonacci_test] fibonacci(12), 
       [head_and_tail]
         /*
         A let-expression.
-        The compiler can infer the types of the assignments so you don't
+        The type checker can infer the types of the assignments so you don't
         need to specify the types explicitly.
         All the defined assignments are immutable values and can therefore not be
         mutated in the expression.
@@ -183,18 +228,14 @@ scheme rsl_examples =
         Since if-expressions always return something, they must have an else clause.
         */
         if true then 42 else 0 end, 
-      [concat_lists]
-        <.0, 1.> ^ <.2, 3.>, 
+      [concat_lists] <.0, 1.> ^ <.2, 3.>, 
       [set_difference] {1,2,3,4} \ {2,4},
-      [set_union] empty_nat_set union {14,2,1},
-      [zip1_test]
-        zip1(<.1, 2, 3.>, <.4, 5, 6.>, <..>), 
-      [zip2_test]
-        zip2(<.1, 2, 3.>, <.4, 5, 6.>), 
-      [all_predicate]
-        (all x : Nat :- x isin {1 .. 10} => x < 11), 
-      [exists_predicate]
-        (exists x : Nat :- x isin {1 .. 5} /\ x > 4), 
+      [set_union] {1,2} union {3,4},
+      [set_union2] let empty = empty_nat_set in empty union {35,42} end,
+      [zip1_test] zip1(<.1, 2, 3.>, <.4, 5, 6.>, <..>), 
+      [zip2_test] zip2(<.1, 2, 3.>, <.4, 5, 6.>), 
+      [all_predicate] (all x : Nat :- x isin {1 .. 10} => x < 11), 
+      [exists_predicate] (exists x : Nat :- x isin {1 .. 5} /\ x > 4), 
       /*
       tests of the ordered tree function
       */
@@ -215,5 +256,36 @@ scheme rsl_examples =
                node(empty, 9, empty)) 
         in 
           tree_is_ordered(tree) = false 
+        end,
+      [higher_order_function_test]
+        map_fun( -\ x : Int :- x + 2, <. 1,2,3 .>),
+      [higher_order_function_test2]
+        let
+            l = <. 1,2,3 .>,
+            l' = map_fun( -\ x : Int :- x + 2, l),
+            l'' = map_fun( -\ x : Int :- x * 3, l')
+        in
+          sum(l'')
+        end,
+      [curry_example] add_forty_two(17),
+      [curry_example2]
+        let
+            -- apply currying and obtain a new function Int -> Int
+            -- informaly it might help to see it as
+            -- add_two_numbers : Int -> Int -> Int
+            -- becomes
+            -- add_two_numbers : (3) -> Int -> Int
+            add_three = add_two_numbers(3) 
+        in
+          add_three(42)
+        end,
+      [curry_example3]
+        -- using a curried function as argument
+        -- for the higher-order map_fun function
+        let
+            l = <. 1,2,2,4,5,6 .>,
+            add_three = add_two_numbers(3) 
+        in
+            map_fun( add_three, l)
         end
   end
