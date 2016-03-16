@@ -32,7 +32,7 @@ scheme rsl_examples =
       increment : Nat -> Nat
       increment(x) is x + 1, 
 
-      -- using the Language unit-type
+      -- using the Language union-type
       say_hello : Language -> Char-list
       say_hello(l) is
         case l of
