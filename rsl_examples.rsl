@@ -7,7 +7,7 @@ scheme rsl_examples =
   class 
     type 
       /*
-      sub-type (constrainted type),
+      sub-type (constrained type),
       a list of exactly 8 natural numbers
       */
       PhoneNumber = 
