@@ -133,7 +133,7 @@ scheme rsl_examples =
       map_fun(fun, xs) is <. fun(x) | x in xs.>,
 
       /*
-      recursive function that returns the sum of a list of natural numbers
+      recursive function that returns the sum of a list of integers
       */
       sum : Int-list -> Int
       sum(xs) is
