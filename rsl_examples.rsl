@@ -361,18 +361,20 @@ scheme rsl_examples =
       [curry_example] add_forty_two(17), 
 
       [curry_example2]
-        let 
-          -- apply currying and obtain a new function Int
-          -- -> Int
-          -- informaly it might help to see it as
-          -- add_two_numbers : Int -> Int -> Int
-          -- becomes
-          -- add_two_numbers : (3) -> Int -> Int
-          add_three = add_two_numbers(3) in add_three(42) end, 
+        /*
+        apply currying and obtain a new function Int -> Int
+        informaly it might help to see it as
+        add_two_numbers : Int -> Int -> Int
+        becomes
+        add_two_numbers : (3) -> Int -> Int
+        */
+        let add_three = add_two_numbers(3) in add_three(42) end, 
 
       [curry_example3]
-        -- using a curried function as argument
-        -- for the higher-order map_fun function
+        /*
+        using a curried function as argument
+        for the higher-order map_fun function
+        */
         let 
           l = <.1, 2, 2, 4, 5, 6.>, 
           add_three = add_two_numbers(3) 
