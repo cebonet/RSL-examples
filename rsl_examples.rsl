@@ -112,9 +112,7 @@ scheme rsl_examples =
       recursion, and thus it can be tail-call-optimized by the SML compiler.
       https://en.wikipedia.org/wiki/Tail_call
       */ 
-      zip1 : 
-        Nat-list >< Nat-list >< (Nat >< Nat)-list -> 
-          (Nat >< Nat)-list
+      zip1 : Nat-list >< Nat-list >< (Nat >< Nat)-list -> (Nat >< Nat)-list
       zip1(l1, l2, result) is 
         if len l1 > 0 /\ len l2 > 0 
         then 
