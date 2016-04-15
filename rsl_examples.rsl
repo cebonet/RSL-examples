@@ -22,7 +22,7 @@ scheme rsl_examples =
       Tree == empty | node(left : Tree, elem : Nat, right : Tree), 
       OrderedTree = {| t : Tree :- tree_is_ordered(t) |}
 
-    variable -- declaring utable variables
+    variable -- declaring mutable variables
         some_var : Nat := 42,
         counter : Nat := 0
     	 
