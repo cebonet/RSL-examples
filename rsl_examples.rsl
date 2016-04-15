@@ -10,26 +10,28 @@ scheme rsl_examples =
       */
       PhoneNumber = {| phone_number : Nat-list :- len phone_number = 8 |}, 
       -- variant type (union type)
-      Language == korean | japanese | danish | french, 
+      Language == korean | japanese | danish | french,
+      TranslationMap = (Language >< Char-list) -m-> Char-list,
+
+      -- shorthand record type
+      -- see shorthand_record test cases
+      City :: city_name : Text city_population : Real,
 
       -- ordered tree example from the RSL book page -- 102
+      -- recursive data type
       Tree == empty | node(left : Tree, elem : Nat, right : Tree), 
-      OrderedTree = {| t : Tree :- tree_is_ordered(t) |} 
+      OrderedTree = {| t : Tree :- tree_is_ordered(t) |}
+
+    variable -- declaring utable variables
+        some_var : Nat := 42,
+        counter : Nat := 0
     	 
     value 
       /*
-      an empty set often need to be declared with a type,
-      else it will be ambigous to the type checker for the cases
-      where it has to infer the type. (see the [set_ union2] test case)
+      defining an empty set of natural numbers
       */
       empty_nat_set : Nat-set = {}, 
-      	 
-      /*
-      simple function example 
-      */ 
-      increment : Nat -> Nat
-      increment(x) is x + 1, 
-      	 
+
       /*
       using the Language type in a case expression
       */ 
@@ -41,13 +43,33 @@ scheme rsl_examples =
           danish -> "hej",
           korean -> "anyoung"
         end, 
-      	 
+
       /*
-      a quiet boring function that does nothing
-      (the Unit type is similar to void in java) 
-      */ 
-      void_method : Nat -> Unit
-      void_method(n) is (), 
+      reading a variable
+      */
+      read_some_var : Unit -> read some_var Nat
+      read_some_var () is some_var,
+
+      /*
+      writing to a variable
+      */
+      set_some_var : Nat -> write some_var Unit
+      set_some_var(n) is some_var := n,
+
+      /*
+      read and write, and sequencing statements
+      */
+      increment_counter : Unit -> read counter write counter Unit
+      increment_counter () is
+        counter := if counter = 10 then 0
+                   else counter + 1 end; -- sequencing statements together with ;
+        (), -- returning Unit
+
+      decrement_counter : Unit -> read counter write counter Unit
+      decrement_counter () is
+        counter := if counter > 0 then counter - 1
+                   else 0 end;
+        (),
       	 
       /*
       function using the PhoneNumber sub-type 
@@ -94,6 +116,13 @@ scheme rsl_examples =
         else hd l 
         end 
       pre len l > 0, 
+
+      /*
+      add translation of some english word to the translation in some language
+      */
+      addTranslationToMap : TranslationMap >< Language >< Char-list >< Char-list -> TranslationMap
+      addTranslationToMap(tmap, lang, word_lang, word_eng) is
+        tmap !! [(lang, word_eng) +> word_lang],
       	 
       /*
       a basic recursive function 
@@ -241,10 +270,17 @@ scheme rsl_examples =
             {e} union extract_elems(t1) union 
             extract_elems(t2)
         end
-    	 
-    test_case 
-      [incr_test] increment(42), 
 
+    test_case 
+      [shorthand_record1]
+        let
+          -- using the implicit record constructor
+          cph = mk_City("Copenhagen", 1.2)
+        in
+          -- extracting population count from the record
+          city_population(cph)
+        end,
+          
       [dial_phone_test] dial_phone_num(<.1, 2, 3, 4, 5, 6, 7, 8.>), 
 
       [dial_phone_test2]
@@ -278,6 +314,20 @@ scheme rsl_examples =
       [some_set_comprehension] {x | x : Nat :- x isin {1 .. 10} /\ x \ 2 = 0}, 
 
       [some_other_set_comprehension] {x + 1 | x : Nat :- x isin {0 .. 10} /\ x \ 2 = 0}, 
+
+      [lang_map]
+        let
+          m = [(japanese, "konnichiwa") +> "hi",
+               (danish, "hej") +> "hi",
+               (japanese, "arigato") +> "thanks"]
+        in
+          addTranslationToMap(m, japanese, "kawa", "river")
+        end,
+
+      [map_domain]
+        dom ["a" +> 1, "b" +> 1, "c" +> 2] = {"a","b","c"},
+
+      [map_range] rng ["a" +> 1, "b" +> 1, "c" +> 2] = {1,2},
 
       [fibonacci_test] fibonacci(12), 
 
