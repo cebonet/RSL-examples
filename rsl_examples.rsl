@@ -123,11 +123,10 @@ scheme rsl_examples =
 
       /*
       function that adds some values to the map type datastructure
-      add translation of some english word to the translation in some language
       */
       addTranslationToMap : TranslationMap >< Language >< Text >< Text -> TranslationMap
       addTranslationToMap(tmap, lang, word_lang, word_eng) is
-        tmap !! [(lang, word_eng) +> word_lang],
+        tmap !! [(lang, word_lang) +> word_eng],
       	 
       /*
       a basic recursive function 
