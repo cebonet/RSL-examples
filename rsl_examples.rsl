@@ -10,19 +10,24 @@ scheme rsl_examples =
       */
       PhoneNumber = {| phone_number : Nat-list :- len phone_number = 8 |}, 
       -- variant type (union type)
-      Language == korean | japanese | danish | french,
-      TranslationMap = (Language >< Char-list) -m-> Char-list,
+      Language == korean
+                | japanese
+                | danish
+                | french,
+      TranslationMap = (Language >< Text) -m-> Text,
 
       -- shorthand record type
       -- see shorthand_record test cases
-      City :: city_name : Text city_population : Real,
+      City :: city_name       : Text
+              city_mayor      : Text
+              city_population : Real,
 
       -- ordered tree example from the RSL book page -- 102
       -- recursive data type
       Tree == empty | node(left : Tree, elem : Nat, right : Tree), 
       OrderedTree = {| t : Tree :- tree_is_ordered(t) |}
 
-    variable -- declaring utable variables
+    variable -- declaring mutable variables
         some_var : Nat := 42,
         counter : Nat := 0
     	 
@@ -35,7 +40,7 @@ scheme rsl_examples =
       /*
       using the Language type in a case expression
       */ 
-      say_hello : Language -> Char-list
+      say_hello : Language -> Text
       say_hello(l) is 
         case l of
           french -> "salut",
@@ -57,7 +62,7 @@ scheme rsl_examples =
       set_some_var(n) is some_var := n,
 
       /*
-      read and write, and sequencing statements
+      read and write variable, and sequencing statements together with ;
       */
       increment_counter : Unit -> read counter write counter Unit
       increment_counter () is
@@ -74,7 +79,7 @@ scheme rsl_examples =
       /*
       function using the PhoneNumber sub-type 
       */ 
-      dial_phone_num : PhoneNumber -> Char-list
+      dial_phone_num : PhoneNumber -> Text
       dial_phone_num(phone_num) is "hello", 
       	 
       /*
@@ -85,18 +90,17 @@ scheme rsl_examples =
       some_partial_function(n) is n + 42 pre n > 17, 
       	 
       /*
-      example of function overloading (two max functions)
+      example of function overloading
+      (this scheme class contains two max functions)
       */ 
       max : Int >< Int -> Int
       max(i1, i2) is
-        if i1 > i2 then
-            i1
-        else
-            i2
-        end, 
+        if i1 > i2 then i1
+        else i2 end, 
       	 
       /*
-      example of function overloading (two max functions)
+      example of function overloading
+      (this scheme class contains two max functions)
       */ 
       max : Int-list -~-> Int
       max(l) is 
@@ -118,9 +122,10 @@ scheme rsl_examples =
       pre len l > 0, 
 
       /*
+      function that adds some values to the map type datastructure
       add translation of some english word to the translation in some language
       */
-      addTranslationToMap : TranslationMap >< Language >< Char-list >< Char-list -> TranslationMap
+      addTranslationToMap : TranslationMap >< Language >< Text >< Text -> TranslationMap
       addTranslationToMap(tmap, lang, word_lang, word_eng) is
         tmap !! [(lang, word_eng) +> word_lang],
       	 
@@ -184,7 +189,7 @@ scheme rsl_examples =
       map_fun(fun, xs) is <.fun(x) | x in xs.>, 
       	 
       /*
-      recursive function that returns the sum of a list of natural numbers
+      recursive function that returns the sum of a list of integers numbers
       */ 
       sum : Int-list -> Int
       sum(xs) is 
@@ -219,7 +224,7 @@ scheme rsl_examples =
       (creating a new function by combining other functions)
       in this case we use the add_two_numbers, apply one argument
       to them and chain them together using the infix
-      operator #
+      function composition operator #
       the resulting function can be understood as
       f(x) = 13 + 42 + (-3 + x)
       */ 
@@ -275,7 +280,7 @@ scheme rsl_examples =
       [shorthand_record1]
         let
           -- using the implicit record constructor
-          cph = mk_City("Copenhagen", 1.2)
+          cph = mk_City("Copenhagen", "Frank Jensen", 1.2)
         in
           -- extracting population count from the record
           city_population(cph)
@@ -366,7 +371,7 @@ scheme rsl_examples =
         lambda functions can be declared using the following
         syntax
         -\ args : Type :- expression
-        usually they are used directly (anonomously)
+        usually they are used directly (anomously)
         as arguments for higher order functions.
         see for example [higher_order_function_test]
         for a common use case
