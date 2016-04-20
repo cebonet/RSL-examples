@@ -19,7 +19,7 @@ scheme rsl_examples =
       -- shorthand record type
       -- see shorthand_record test cases
       City :: city_name       : Text
-              city_mayor      : Text
+              city_mayor      : Text <-> new_mayor -- special constructor, that can be used to create a new record from a previous one (see the testcase [shorthand_record2])
               city_population : Real,
 
       -- ordered tree example from the RSL book page -- 102
@@ -283,6 +283,15 @@ scheme rsl_examples =
         in
           -- extracting population count from the record
           city_population(cph)
+        end,
+
+      [shorthand_record2]
+        let
+          -- using the implicit record constructor
+          cph = mk_City("Copenhagen", "Frank Jensen", 1.2)
+        in
+          -- use the special constructor to create new record from old one with a new mayor
+          new_mayor("John Doe", cph)
         end,
           
       [dial_phone_test] dial_phone_num(<.1, 2, 3, 4, 5, 6, 7, 8.>), 
